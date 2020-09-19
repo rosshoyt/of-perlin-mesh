@@ -1,9 +1,16 @@
 #include "ofApp.h"
 
+ofApp::ofApp() : midiPortState(1, true, "unusedPort", "meshMIDIPort") {
+    midiPortState.setupMIDIPort();
+}
 //--------------------------------------------------------------
 void ofApp::setup(){
+    ofSetFrameRate(60);
     width = 50;
     height = 50;
+    
+    widthNoteGrid = 12;
+    heightNoteGrid = 11;
     
     // set rendering styles to false;
     b_messyMesh = false;
@@ -30,14 +37,24 @@ void ofApp::setup(){
     // here we loop through and join the vertices together as indices to make rows of triangles to make the wireframe grid
     for(int y = 0; y < height - 1; y++){
         for(int x = 0; x < width - 1; x++){
-            mainMesh.addIndex(x+y*width);
-            mainMesh.addIndex((x+1)+y*width);
-            mainMesh.addIndex(x+(y+1)*width);
             
-            mainMesh.addIndex((x+1)+y*width);
-            mainMesh.addIndex((x+1)+(y+1)*width);
-            mainMesh.addIndex(x+(y+1)*width);
+            int index1 = x+y*width;
+            int index2 = (x+1)+y*width;
+            int index3 = x+(y+1)*width;
             
+            int index4 = (x+1)+y*width;
+            int index5 = (x+1)+(y+1)*width;
+            int index6 = x+(y+1)*width;
+            
+            printf("%d %d %d %d %d %d\n",index1, index2, index3, index4, index5, index6);
+            
+            mainMesh.addIndex(index1);
+            mainMesh.addIndex(index2);
+            mainMesh.addIndex(index3);
+            
+            mainMesh.addIndex(index4);
+            mainMesh.addIndex(index5);
+            mainMesh.addIndex(index6);
         }
     }
 }
@@ -46,13 +63,69 @@ void ofApp::setup(){
 void ofApp::update(){
     
     // change the z value for each vertex in our mesh
+    int widthNormalized = width / 2 + width;
+    int heightNoramalizer = height / 2 + width;
+//
+//    int width = width / 12;
+//    int height = height / 12;
+    
+    
     if(b_messyMesh) {
-        for(int i = 0; i < mainMesh.getNumVertices(); i++){
+        int numVertices = mainMesh.getNumVertices();
+        auto notes = midiPortState.getChannelNotes(0);
+        
+        float noteXSizeOnGrid = width / widthNoteGrid;//std::static_cast<int>(boxWidth);
+        float noteYSizeOnGrid = height / heightNoteGrid;
+        //bool noteDown = notes.size() > 0;
+        std::vector<int> notesDown;
+//        for(auto it : notes.begin()){
+//
+//        }
+        for(int i = 0; i < numVertices; i++){
+
             ofVec3f newPosition = mainMesh.getVertex(i);
-            newPosition.z = ofRandom(-1.0, 1.0);
+            
+            
+            // amount we'll scale the Y value by if there is a note present
+            //float scale = 5.0f;
+            
+            
+            // set xPitchCoord // TODO Refactor to method
+//            auto accum = 0.f;
+            int xPitchCoord = 0;
+//            while(xPitchCoord <= widthNoteGrid  && accum < width){
+//
+//            }
+            auto accum = 0.f;    
+            for(auto xPitchIndex = 0; (xPitchIndex < widthNoteGrid && accum < width); xPitchCoord++, accum += noteXSizeOnGrid){
+                if(accum > newPosition.x){
+                    //std::cout<<"found xCoord = "<< xPitchCoord << " Accum = " << accum << "\n";
+                    //scale = 5.0f; // TODO control with ofxParam 'scaleAmount' (slider) in GUI
+                    break;
+                }
+            }
+            
+            
+            accum = 0.f;
+            int yPitchCoord = 0;
+            for(auto yPitchIndex = 0; (yPitchIndex < heightNoteGrid && accum < width); yPitchCoord++, accum += noteYSizeOnGrid){
+                if(accum > newPosition.y){
+                    //std::cout<<"found yCoord = "<< yPitchCoord << " Accum = " << accum << "\n";
+                    //scale = 5.0f; // TODO control with ofxParam 'scaleAmount' (slider) in GUI
+                    break;
+                }
+            }
+            int pitch = (xPitchCoord + 1) * (yPitchCoord);
+            std::cout<< "pitch = " << pitch << "\n";
+            if(notes.count(pitch) > 0){
+                std::cout<<"note was on, Scaling up Z val";
+                
+                newPosition.z = ofRandom(-1.0, 1.0) * 10.0f;
+            }
             mainMesh.setVertex(i, newPosition);
         }
     }
+    
     
     if(b_perlinMesh){
         // distort z val of each point in our mesh with perlin noise
@@ -60,7 +133,6 @@ void ofApp::update(){
         for(int y = 0; y < height; y++){
             for(int x = 0; x < width; x++){
                 ofVec3f newPosition = mainMesh.getVertex(i);
-                //
                 newPosition.z = ofNoise(ofMap(x, 0, width, 0, perlinRange), ofMap(y, 0, height, 0, perlinRange)) * perlinHeight;
                 mainMesh.setVertex(i, newPosition);
                 i++;

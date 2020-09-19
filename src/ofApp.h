@@ -1,10 +1,12 @@
 #pragma once
 
 #include "ofMain.h"
+#include "MIDIPortState.h"
 
 class ofApp : public ofBaseApp{
 
 	public:
+        ofApp();
 		void setup();
 		void update();
 		void draw();
@@ -27,6 +29,10 @@ class ofApp : public ofBaseApp{
         ofMesh mainMesh;
         ofEasyCam mainCam;
         int width, height;
+        int widthNoteGrid, heightNoteGrid;
         bool b_messyMesh, b_perlinMesh, b_drawWireFrame;
         float perlinRange, perlinHeight;
+    
+        // MIDI input
+        MIDIPortState midiPortState;
 };
