@@ -1,6 +1,6 @@
 #include "ofApp.h"
 
-ofApp::ofApp() : midiPortState(1, true, "unusedPort", "meshMIDIPort") {
+ofApp::ofApp() : midiPortState(1, true, "unusedPort", "meshMIDIPort"), pointNoteMap() {
     midiPortState.setupMIDIPort();
 }
 //--------------------------------------------------------------
@@ -10,7 +10,7 @@ void ofApp::setup(){
     height = 50;
     
     widthNoteGrid = 12;
-    heightNoteGrid = 11;
+    heightNoteGrid = 12;
     
     // set rendering styles to false;
     b_messyMesh = false;
@@ -26,11 +26,15 @@ void ofApp::setup(){
     
     // make points inide the mesth
     // add one vertex to the mesh across our width and height
-    // we use these y and y vals to set the x and y coordinates of the mesh, adding a z value of zero to complete the 3D location of each vertex
+    // we use these y and x vals to set the x and y coordinates of the mesh, adding a z value of zero to complete the 3D location of each vertex
     for(int y = 0; y < height; y++){
         for(int x = 0; x < width; x++){
-            mainMesh.addVertex(ofPoint(x-width/2, y-height/2,0));
+            ofPoint point(x-width/2, y-height/2, 0);
+            
+            mainMesh.addVertex(point);
             mainMesh.addColor(ofFloatColor(0,0,0));
+            
+            pointNoteMap.insert({ { point.x, point.y }, getNoteFromPoint(point)});
         }
     }
     
@@ -46,7 +50,7 @@ void ofApp::setup(){
             int index5 = (x+1)+(y+1)*width;
             int index6 = x+(y+1)*width;
             
-            printf("%d %d %d %d %d %d\n",index1, index2, index3, index4, index5, index6);
+            //printf("%d %d %d %d %d %d\n",index1, index2, index3, index4, index5, index6);
             
             mainMesh.addIndex(index1);
             mainMesh.addIndex(index2);
@@ -86,37 +90,30 @@ void ofApp::update(){
             ofVec3f newPosition = mainMesh.getVertex(i);
             
             
-            // amount we'll scale the Y value by if there is a note present
-            //float scale = 5.0f;
-            
-            
-            // set xPitchCoord // TODO Refactor to method
-//            auto accum = 0.f;
-            int xPitchCoord = 0;
-//            while(xPitchCoord <= widthNoteGrid  && accum < width){
 //
+//            int xPitchCoord = 0;
+//
+//            auto accum = 0.f;
+//            for(auto xPitchIndex = 0; (xPitchIndex < widthNoteGrid && accum < width); xPitchCoord++, accum += noteXSizeOnGrid){
+//                if(accum > newPosition.x){
+//                    //std::cout<<"found xCoord = "<< xPitchCoord << " Accum = " << accum << "\n";
+//                    //scale = 5.0f; // TODO control with ofxParam 'scaleAmount' (slider) in GUI
+//                    break;
+//                }
 //            }
-            auto accum = 0.f;    
-            for(auto xPitchIndex = 0; (xPitchIndex < widthNoteGrid && accum < width); xPitchCoord++, accum += noteXSizeOnGrid){
-                if(accum > newPosition.x){
-                    //std::cout<<"found xCoord = "<< xPitchCoord << " Accum = " << accum << "\n";
-                    //scale = 5.0f; // TODO control with ofxParam 'scaleAmount' (slider) in GUI
-                    break;
-                }
-            }
-            
-            
-            accum = 0.f;
-            int yPitchCoord = 0;
-            for(auto yPitchIndex = 0; (yPitchIndex < heightNoteGrid && accum < width); yPitchCoord++, accum += noteYSizeOnGrid){
-                if(accum > newPosition.y){
-                    //std::cout<<"found yCoord = "<< yPitchCoord << " Accum = " << accum << "\n";
-                    //scale = 5.0f; // TODO control with ofxParam 'scaleAmount' (slider) in GUI
-                    break;
-                }
-            }
-            int pitch = (xPitchCoord + 1) * (yPitchCoord);
-            std::cout<< "pitch = " << pitch << "\n";
+//
+//
+//            accum = 0.f;
+//            int yPitchCoord = 0;
+//            for(auto yPitchIndex = 0; (yPitchIndex < heightNoteGrid && accum < width); yPitchCoord++, accum += noteYSizeOnGrid){
+//                if(accum > newPosition.y){
+//                    //std::cout<<"found yCoord = "<< yPitchCoord << " Accum = " << accum << "\n";
+//                    //scale = 5.0f; // TODO control with ofxParam 'scaleAmount' (slider) in GUI
+//                    break;
+//                }
+//            }
+            int pitch = getNoteFromPoint(newPosition);
+//            std::cout<< "pitch = " << pitch << "\n";
             if(notes.count(pitch) > 0){
                 std::cout<<"note was on, Scaling up Z val";
                 
