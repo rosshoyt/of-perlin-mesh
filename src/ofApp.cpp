@@ -30,11 +30,10 @@ void ofApp::setup(){
     for(int y = 0; y < height; y++){
         for(int x = 0; x < width; x++){
             ofPoint point(x-width/2, y-height/2, 0);
-            
             mainMesh.addVertex(point);
             mainMesh.addColor(ofFloatColor(0,0,0));
-            
-            pointNoteMap.insert({ { point.x, point.y }, getNoteFromPoint(point)});
+            // associate the x,y coords of each vertex with the MIDI note they represent
+            pointNoteMap.insert({ { point.x, point.y }, getNoteFromPoint(point) } );
         }
     }
     
@@ -69,29 +68,23 @@ void ofApp::update(){
     // change the z value for each vertex in our mesh
     int widthNormalized = width / 2 + width;
     int heightNoramalizer = height / 2 + width;
-//
-//    int width = width / 12;
-//    int height = height / 12;
-    
+
     
     if(b_messyMesh) {
+        
         int numVertices = mainMesh.getNumVertices();
+        
+        // get current active MIDI notes
         auto notes = midiPortState.getChannelNotes(0);
         
-        float noteXSizeOnGrid = width / widthNoteGrid;//std::static_cast<int>(boxWidth);
-        float noteYSizeOnGrid = height / heightNoteGrid;
-        std::vector<int> notesDown;
-
         for(int i = 0; i < numVertices; i++){
-
             ofVec3f newPosition = mainMesh.getVertex(i);
-        
-            int pitch = pointNoteMap.at({newPosition.x, newPosition.y});//getNoteFromPoint(newPosition);
-//            std::cout<< "pitch = " << pitch << "\n";
-            if(notes.count(pitch) > 0){
-                //std::cout<<"Pitch " << pitch <<"  on, scaling up Z val";
-                
-                newPosition.z = 10.f;//ofRandom(-1.0, 1.0) * 10.0f;
+            int midiPitch = pointNoteMap.at({newPosition.x, newPosition.y});
+            if(notes.count(midiPitch) > 0){
+                newPosition.z = 10.f;
+            } else{
+                // no note present - reset z to 0
+                newPosition.z = 0.0f;
             }
             mainMesh.setVertex(i, newPosition);
         }
@@ -160,6 +153,37 @@ void ofApp::keyPressed(int key){
                 perlinHeight -= 0.1;
             break;
     }
+}
+
+//--------------------------------------------------------------
+int ofApp::getNoteFromPoint(const ofVec3f &point){
+    std::cout << "Finding note for point (" << point << ")" << std::endl;
+    int xSegment = getSegmentNumber(point.x, width, widthNoteGrid);
+    int ySegment = getSegmentNumber(point.y, height, heightNoteGrid);
+    // convert segment #s to MIDI note number
+    int noteNumber = ySegment * heightNoteGrid + xSegment;
+    //std::cout<< "Pitch = " << noteNumber << ", xSegment #: " << xSegment << ", ySegment #: " << ySegment << std::endl;
+    
+    return noteNumber;
+    
+}
+
+//--------------------------------------------------------------
+int ofApp::getSegmentNumber(const int coord, const int dimLength, const int nSegments){
+    float segmentSize = float(dimLength) / float(nSegments);
+    // first compensate for the offset which was introduced to center the mesh
+    float coordOffset = dimLength / 2;
+    int normalizedCoord = coord + coordOffset;
+    
+    int pitchGridIndex = 1;
+    for(; pitchGridIndex <= nSegments; pitchGridIndex++){
+        float gridSegmentMaxVal = pitchGridIndex * segmentSize;
+        if(normalizedCoord < gridSegmentMaxVal){
+            break;
+        }
+    }
+    return pitchGridIndex - 1;
+    
 }
 
 //--------------------------------------------------------------

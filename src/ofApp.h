@@ -23,8 +23,6 @@ class ofApp : public ofBaseApp{
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
 		
-    
-    
         // 3D graphics
         ofMesh mainMesh;
         ofEasyCam mainCam;
@@ -33,46 +31,14 @@ class ofApp : public ofBaseApp{
         bool b_messyMesh, b_perlinMesh, b_drawWireFrame;
         float perlinRange, perlinHeight;
     
+        // map that stores each x/y coord pair's associated MIDI pitch value
+        std::map<std::pair<int,int>,int> pointNoteMap;
     
-    std::map<std::pair<int,int>,int> pointNoteMap;
     
-    int getNoteFromPoint(const ofVec3f &point){
-        std::cout << "Finding note for point (" << point << ")" << std::endl;
-//        int xNorm = float(width) / float(widthNoteGrid);
-//        int yNorm = float(height) / float(heightNoteGrid);
-        int xSegment = getSegmentNumber(point.x, width, widthNoteGrid);
-        int ySegment = getSegmentNumber(point.y, height, heightNoteGrid);
-        int noteNumber = ySegment * heightNoteGrid + xSegment;
-        std::cout<< "Pitch = " << noteNumber << ", xSegment #: " << xSegment << ", ySegment #: " << ySegment << std::endl;
-        
-        return noteNumber;
-        
-    }
-    //ofVec3f normalizePoint
-    int getSegmentNumber(const int coord, const int dimLength, const int nSegments){
-        float segmentSize = float(dimLength) / float(nSegments);
-        // first compensate for the offset which was introduced to center the mesh
-        float coordOffset = dimLength / 2;
-        int normalizedCoord = coord + coordOffset;
-        
-        //std::cout << "Getting segment of normalized coord " << normalizedCoord << " using segments of size " << segmentSize << std::endl;
-        
-        //std::cout << "Checking if normCoord is less than... ";
-        
-        int pitchGridIndex = 1;
-        for(; pitchGridIndex <= nSegments; pitchGridIndex++){
-            float gridSegmentMaxVal = pitchGridIndex * segmentSize;
-            //std::cout << gridSegmentMaxVal << "... ";
-            
-            if(normalizedCoord < gridSegmentMaxVal){
-                break;
-            }
-        }
-        //std::cout << std::endl;
-        
-        return pitchGridIndex - 1;
-        
-    }
+        int getNoteFromPoint(const ofVec3f &point);
+    
+        // TODO refactor, store some calculated vars globally
+        int getSegmentNumber(const int coord, const int dimLength, const int nSegments);
     
     
         // MIDI input
