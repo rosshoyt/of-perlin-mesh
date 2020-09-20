@@ -80,44 +80,18 @@ void ofApp::update(){
         
         float noteXSizeOnGrid = width / widthNoteGrid;//std::static_cast<int>(boxWidth);
         float noteYSizeOnGrid = height / heightNoteGrid;
-        //bool noteDown = notes.size() > 0;
         std::vector<int> notesDown;
-//        for(auto it : notes.begin()){
-//
-//        }
+
         for(int i = 0; i < numVertices; i++){
 
             ofVec3f newPosition = mainMesh.getVertex(i);
-            
-            
-//
-//            int xPitchCoord = 0;
-//
-//            auto accum = 0.f;
-//            for(auto xPitchIndex = 0; (xPitchIndex < widthNoteGrid && accum < width); xPitchCoord++, accum += noteXSizeOnGrid){
-//                if(accum > newPosition.x){
-//                    //std::cout<<"found xCoord = "<< xPitchCoord << " Accum = " << accum << "\n";
-//                    //scale = 5.0f; // TODO control with ofxParam 'scaleAmount' (slider) in GUI
-//                    break;
-//                }
-//            }
-//
-//
-//            accum = 0.f;
-//            int yPitchCoord = 0;
-//            for(auto yPitchIndex = 0; (yPitchIndex < heightNoteGrid && accum < width); yPitchCoord++, accum += noteYSizeOnGrid){
-//                if(accum > newPosition.y){
-//                    //std::cout<<"found yCoord = "<< yPitchCoord << " Accum = " << accum << "\n";
-//                    //scale = 5.0f; // TODO control with ofxParam 'scaleAmount' (slider) in GUI
-//                    break;
-//                }
-//            }
-            int pitch = getNoteFromPoint(newPosition);
+        
+            int pitch = pointNoteMap.at({newPosition.x, newPosition.y});//getNoteFromPoint(newPosition);
 //            std::cout<< "pitch = " << pitch << "\n";
             if(notes.count(pitch) > 0){
-                std::cout<<"note was on, Scaling up Z val";
+                //std::cout<<"Pitch " << pitch <<"  on, scaling up Z val";
                 
-                newPosition.z = ofRandom(-1.0, 1.0) * 10.0f;
+                newPosition.z = 10.f;//ofRandom(-1.0, 1.0) * 10.0f;
             }
             mainMesh.setVertex(i, newPosition);
         }
