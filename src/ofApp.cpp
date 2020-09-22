@@ -24,6 +24,7 @@ void ofApp::setup(){
     ofBackground(255);
     mainCam.setPosition(0, 0, 80);
     
+    
     // make points inide the mesth
     // add one vertex to the mesh across our width and height
     // we use these y and x vals to set the x and y coordinates of the mesh, adding a z value of zero to complete the 3D location of each vertex
@@ -65,11 +66,6 @@ void ofApp::setup(){
 //--------------------------------------------------------------
 void ofApp::update(){
     
-    // change the z value for each vertex in our mesh
-    int widthNormalized = width / 2 + width;
-    int heightNoramalizer = height / 2 + width;
-
-    
     if(b_messyMesh) {
         
         int numVertices = mainMesh.getNumVertices();
@@ -81,7 +77,8 @@ void ofApp::update(){
             ofVec3f newPosition = mainMesh.getVertex(i);
             int midiPitch = pointNoteMap.at({newPosition.x, newPosition.y});
             if(notes.count(midiPitch) > 0){
-                newPosition.z = 10.f;
+                // scale note based on velocity
+                newPosition.z = 20.f * float(notes[midiPitch]) / 128.f;
             } else{
                 // no note present - reset z to 0
                 newPosition.z = 0.0f;
