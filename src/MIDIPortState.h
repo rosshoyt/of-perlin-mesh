@@ -7,9 +7,8 @@
 
 #ifndef MIDIPortNotesState_h
 #define MIDIPortNotesState_h
-
-#import "MIDIChannelState.h"
 #include "ofxMidi.h"
+#include "MIDIChannelState.h"
 
 class MIDIPortState : public ofxMidiListener {
 public:
@@ -67,12 +66,16 @@ public:
     
     /**
      * Gets the current value of the specified MIDI CC value based on its channel
-     * @param channel - MIDI Channel Number (1-16)
+     * @param channel - MIDI Channel Number (0-15)
      * @param ccNumber - MIDI CC Number (0-127)
      * TODO Input validation
      */
     int getMIDICCValue(unsigned int channel, int ccNumber){
-        return channels[channel - 1].tryGetCCValue(ccNumber);
+        return channels[channel].tryGetCCValue(ccNumber);
+    }
+    
+    float getADSRValue(unsigned int channel, int noteNumber){
+        return channels[channel].getADSRLevel(noteNumber);
     }
 private:
     // Midi Input port

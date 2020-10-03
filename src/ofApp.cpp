@@ -1,6 +1,6 @@
 #include "ofApp.h"
 
-ofApp::ofApp() : midiPortState(1, true, "unusedPort", "meshMIDIPort"), pointNoteMap() {
+ofApp::ofApp() : midiPortState(4, true), pointNoteMap() {
     midiPortState.setupMIDIPort();
 }
 //--------------------------------------------------------------
@@ -66,40 +66,43 @@ void ofApp::setup(){
 //--------------------------------------------------------------
 void ofApp::update(){
     
-    if(b_messyMesh) {
-        
-        int numVertices = mainMesh.getNumVertices();
-        
-        // get current active MIDI notes
-        auto notes = midiPortState.getChannelNotes(0);
-        
-        for(int i = 0; i < numVertices; i++){
-            ofVec3f newPosition = mainMesh.getVertex(i);
-            int midiPitch = pointNoteMap.at({newPosition.x, newPosition.y});
-            if(notes.count(midiPitch) > 0){
-                // scale note based on velocity
-                newPosition.z = 20.f * float(notes[midiPitch]) / 128.f;
-            } else{
-                // no note present - reset z to 0
-                newPosition.z = 0.0f;
-            }
-            mainMesh.setVertex(i, newPosition);
-        }
-    }
     
     
-    if(b_perlinMesh){
-        // distort z val of each point in our mesh with perlin noise
-        int i = 0;
-        for(int y = 0; y < height; y++){
-            for(int x = 0; x < width; x++){
-                ofVec3f newPosition = mainMesh.getVertex(i);
-                newPosition.z = ofNoise(ofMap(x, 0, width, 0, perlinRange), ofMap(y, 0, height, 0, perlinRange)) * perlinHeight;
-                mainMesh.setVertex(i, newPosition);
-                i++;
-            }
+    int numVertices = mainMesh.getNumVertices();
+    
+    // get current active MIDI notes
+    auto notes = midiPortState.getChannelNotes(0);
+    
+    for(int i = 0; i < numVertices; i++){
+        ofVec3f newPosition = mainMesh.getVertex(i);
+        int midiPitch = pointNoteMap.at({newPosition.x, newPosition.y});
+        if(notes.count(midiPitch) > 0){
+            // scale note based on velocity
+            // TODO scale based on SIN of frequency of pitch
+            //float sinMod = sin(timePassed, frequency);
+            newPosition.z = 20.f * float(notes[midiPitch]) / 128.f * midiPortState.getADSRValue(0, midiPitch); // * sinMod; TODO
+            
+        } else{
+            // no note present - reset z to 0
+            newPosition.z = 0.0f;
         }
+        mainMesh.setVertex(i, newPosition);
     }
+    //    }
+//
+//
+//    if(b_perlinMesh){
+//        // distort z val of each point in our mesh with perlin noise
+//        int i = 0;
+//        for(int y = 0; y < height; y++){
+//            for(int x = 0; x < width; x++){
+//                ofVec3f newPosition = mainMesh.getVertex(i);
+//                newPosition.z = ofNoise(ofMap(x, 0, width, 0, perlinRange), ofMap(y, 0, height, 0, perlinRange)) * perlinHeight;
+//                mainMesh.setVertex(i, newPosition);
+//                i++;
+//            }
+//        }
+//    }
 }
 
 //--------------------------------------------------------------
