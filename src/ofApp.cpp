@@ -1,6 +1,6 @@
 #include "ofApp.h"
 
-ofApp::ofApp() : midiPortState(4, true), pointNoteMap() {
+ofApp::ofApp() : midiPortState(16, false), pointNoteMap() {
     midiPortState.setupMIDIPort();
 }
 //--------------------------------------------------------------
