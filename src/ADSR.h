@@ -10,12 +10,8 @@
 
 #include "spline.h"
 
-
-typedef std::chrono::system_clock SystemClock;
-
 class Time{
 public:
-   
     static const long getCurrentTime(){
         std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
         auto duration = now.time_since_epoch();
@@ -23,13 +19,13 @@ public:
         //std::cout << "In getCurrentTime, current time (MS) = " << millis << '\n';
         return millis;
     }
-    static const long elapsedTimeSince(long oldTime){
-        long elapsed = getCurrentTime() - oldTime;
+    static const long elapsedTimeSince(long oldTimeMS){
+        long elapsed = getCurrentTime() - oldTimeMS;
         //std::cout<< elapsed << " milliseconds elapsed\n";
         return elapsed;
-    }
-    
+    }  
 };
+
 enum ADSRState {
     ATTACKING,
     DECAYING,
@@ -37,6 +33,7 @@ enum ADSRState {
     RELEASING,
     OFF
 };
+
 // Class which can be shared between NoteADSRState
 // TODO add 'looping' ADSR curve
 class ADSR {
@@ -50,7 +47,7 @@ public:
     float aL, dL, sL;
     double aTot, dTot, sTot, rTot;
     long splineAmount;
-    //long aMidpointL, dMidpointL, rMidpointL;
+    
     
 private:
     void init(){
@@ -60,35 +57,10 @@ private:
         rTot = total = a + d + s + r;
         
         splineAmount = .3f;
-        
-        //aMidpointL = .75f;
-        //dMidpointL = .75f;
-        //rMidpointL = .75f;
-        
     }
-    //long getLength()
+
 };
 
-
-
-
-//class Spline {
-//public:
-//    Spline(double yAmount, std::vector<double> xVals) : X(), Y() {
-//        for(int i = 1; i < 6; i+=2){
-//
-//        }
-//        //                     { double(0), double(adsr.aTot), double(adsr.dTot), double(adsr.sTot), double(adsr.rTot)}, // x
-//        //                   { double(0), double(adsr.aL), double(adsr.dL), double(adsr.sL),double(0)} // y
-//        //                   );
-//        spline.set_points(X, Y);
-//    }
-//    tk::spline spline;
-//
-//    std::vector<double> X, Y;
-//
-//
-//};
 
 
 
@@ -118,9 +90,9 @@ public:
             //std::cout << "Getting time elapsed since start time = " << startTime << '\n';
             auto timePassed = Time::elapsedTimeSince(startTime);
             //console.lo
-            std::cout<< timePassed << " milliseconds elapsed\n";
+            //std::cout<< timePassed << " milliseconds elapsed\n";
             auto level = getLevel(timePassed, true);
-            std::cout<<"Note ADSR Level = " << level << ", regular lerp = "<< getLevel(timePassed, false)<< '\n';
+            //std::cout<<"Note ADSR Level = " << level << ", regular lerp = "<< getLevel(timePassed, false)<< '\n';
             return level;
         }
         return 0.f;//level;
@@ -135,23 +107,7 @@ private:
     
     //std::map<ADSRState,long> state;
     //std::vector<std::pair<long,ADSRState>> states;
-    void initSplines(){
-        //std::vector<double>
-        //spline.set_points(
-        
-//        std::vector<double> Y {
-//            0.f, .75f, .0f, .75, .0f
-//        };
-        
-        
-        
-        //}
-        ///;, Y;
-        
-       //                     { double(0), double(adsr.aTot), double(adsr.dTot), double(adsr.sTot), double(adsr.rTot)}, // x
-       //                   { double(0), double(adsr.aL), double(adsr.dL), double(adsr.sL),double(0)} // y
-       //                   );
-        
+    void initSplines(){        
         splineAttack.set_points( { 0.f, adsr.a / 2.f,           adsr.a  },
                                  { 0.f, splineAmount * adsr.aL, adsr.aL }
         );
@@ -159,7 +115,7 @@ private:
                                  { adsr.aL, 1.f - (1.f - splineAmount) * adsr.dL, adsr.dL }
         );
         splineRelease.set_points({ adsr.sTot, adsr.sTot + adsr.r / 2.f, adsr.rTot },
-                                 { adsr.sL, adsr.sL / 2.f, 0.f }//(1.f - splineAmount) * adsr.r, adsr.}
+                                 { adsr.sL, adsr.sL / 2.f, 0.f }
         );
     }
     void updateState(){
@@ -210,6 +166,8 @@ private:
             endLevel = 0.f;
             segmentTimeLength = adsr.r;
             segmentCompleted = elapsed - adsr.sTot;
+            if (spline)
+                return splineRelease(double(elapsed));
         }
         // Note has been completed
         else {

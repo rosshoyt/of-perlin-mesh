@@ -204,6 +204,7 @@
     <ClCompile Include="..\..\..\addons\ofxMidi\libs\rtmidi\RtMidi.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Animated3DMesh.h" />
     <ClInclude Include="src\ofApp.h" />
     <ClInclude Include="src\ADSR.h" />
     <ClInclude Include="src\MIDIChannelState.h" />
