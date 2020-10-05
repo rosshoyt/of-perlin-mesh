@@ -3,6 +3,7 @@
 ofApp::ofApp() : midiPortState(16, false), animated3DMesh(&midiPortState) {
     midiPortState.setupMIDIPort();
 }
+
 //--------------------------------------------------------------
 void ofApp::setup(){
     //animated3DMesh.setMIDIPortState(&midiPortState);
@@ -24,6 +25,3 @@ void ofApp::draw(){
 void ofApp::keyPressed(int key){
     animated3DMesh.keyPressed(key);
 }
-
-
-
